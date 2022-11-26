@@ -2,6 +2,7 @@ class Task {
   String? task;
   String? description;
   bool? done;
+  String? key;
 
   Task(this.task, this.description, this.done);
 
