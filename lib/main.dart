@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: TaskPage(),
+      home: HomeView(),
       // home: Scaffold(
       //   body: StreamBuilder(
       //     stream: FirebaseFirestore.instance

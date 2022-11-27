@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_firebase_demo/core/model/task.dart';
 import 'package:flutter_firebase_demo/core/services/services.dart';
 
 class HomeView extends StatefulWidget {
@@ -20,6 +21,14 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     service = FireBaseService();
+  }
+
+  void save() async {
+    await service!.insertTask(Task(taskName.text, taskDesc.text, false));
+    taskName.clear();
+    taskDesc.clear();
+    setState(() {});
+    Navigator.pop(context);
   }
 
   @override
@@ -58,10 +67,7 @@ class _HomeViewState extends State<HomeView> {
                                 labelText: 'Task Description'),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              taskName.clear();
-                              taskDesc.clear();
-                            },
+                            onPressed: save,
                             child: Text('Kaydet'),
                           )
                         ],
@@ -72,6 +78,48 @@ class _HomeViewState extends State<HomeView> {
             child: Icon(Icons.add),
           ),
           body: TabBarView(children: [
+            FutureBuilder(
+              future: service!.getTasks(),
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.done:
+                    if (snapshot.hasData) {
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Dismissible(
+                              key: Key(snapshot.data![index].key!),
+                              direction: DismissDirection.horizontal,
+                              onDismissed: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  service!.updateTask(snapshot.data![index]);
+                                  setState(() {});
+                                } else {
+                                  service!
+                                      .deleteTasks(snapshot.data![index].key!);
+                                  setState(() {});
+                                }
+                              },
+                              child: !snapshot.data![index].done!
+                                  ? Card(
+                                      child: ListTile(
+                                        title:
+                                            Text(snapshot.data![index].task!),
+                                        subtitle: Text(
+                                            snapshot.data![index].description!),
+                                      ),
+                                    )
+                                  : SizedBox.shrink());
+                        },
+                      );
+                    } else
+                      return Card();
+
+                  default:
+                    return CircularProgressIndicator();
+                }
+              },
+            ),
             FutureBuilder(
               future: service!.getTasks(),
               builder: (context, snapshot) {
@@ -116,7 +164,6 @@ class _HomeViewState extends State<HomeView> {
                 }
               },
             ),
-            Center(child: Text('Done')),
           ]),
         ));
   }

@@ -6,7 +6,8 @@ import 'package:http/http.dart' as http;
 import '../model/task.dart';
 
 class FireBaseService {
-  static const String firebaseUrl = 'https://TodoAppDB.firebaseio.com/';
+  static const String firebaseUrl =
+      'https://flutterfirebasedemo-2156a-default-rtdb.firebaseio.com/';
 
   Future<List<Task>> getTasks() async {
     List<Task> tasklist = <Task>[];
@@ -58,6 +59,18 @@ class FireBaseService {
     final response = await http.put(
         Uri.parse(firebaseUrl + 'tasks/${updateTask.key}.json'),
         body: json.encode(updateTask.toJson()));
+    switch (response.statusCode) {
+      case 200:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<bool> insertTask(Task task) async {
+    final response = await http.post(Uri.parse(firebaseUrl + 'tasks.json'),
+        body: json.encode(task.toJson()));
+
     switch (response.statusCode) {
       case 200:
         return true;
